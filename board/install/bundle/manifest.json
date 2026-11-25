@@ -1,0 +1,49 @@
+{
+  "schema": "taby-install-v1",
+  "board": "amoled-1.64",
+  "revision": "V1",
+  "chip": "esp32s3",
+  "flash_size_mb": 16,
+  "firmware_version": "1.4.0",
+  "assets_version": "0.4.1",
+  "source_sha256": "cc6346ecb12bac39538a9fc818c11b7643bfff72517121f210a79c9f6dcf6d30",
+  "source_commit": "e7051ac4bed179b4067abde8c36a9b9e9fa5ffe1",
+  "source_dirty": true,
+  "images": [
+    {
+      "kind": "bootloader",
+      "file": "bootloader.bin",
+      "offset": 0,
+      "size": 22208,
+      "sha256": "88e153d1bca90fa3496f9066ce7f6ed6e1fbb37aaeccaaaa556999971f16f96f"
+    },
+    {
+      "kind": "firmware",
+      "file": "firmware.bin",
+      "offset": 262144,
+      "size": 1825520,
+      "sha256": "af3b68b0d3a89f1c6ab6ee1b10bd31891587215462d268dd894c7026fcc5a7aa"
+    },
+    {
+      "kind": "partition-table",
+      "file": "partition-table.bin",
+      "offset": 32768,
+      "size": 3072,
+      "sha256": "479238004540e2b1a27fff5923d35481706c445c84455e1b12c917cfda1cc60e"
+    },
+    {
+      "kind": "ota-data",
+      "file": "ota-data.bin",
+      "offset": 102400,
+      "size": 8192,
+      "sha256": "7d2c7ac4888bfd75cd5f56e8d61f69595121183afc81556c876732fd3782c62f"
+    },
+    {
+      "kind": "assets",
+      "file": "assets.bin",
+      "offset": 4456448,
+      "size": 12320768,
+      "sha256": "436c5cd68c45f8a412b7ec29a3546fb843f551fc313f9430b8e6aee4a2c9255b"
+    }
+  ]
+}

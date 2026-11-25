@@ -1,0 +1,389 @@
+diff --git a/firmware/main/CMakeLists.txt b/firmware/main/CMakeLists.txt
+index 7269574..9ea0c75 100644
+--- a/firmware/main/CMakeLists.txt
++++ b/firmware/main/CMakeLists.txt
+@@ -29,8 +29,6 @@ idf_component_register(
+         "taby_wifi.c"
+     INCLUDE_DIRS "."
+     REQUIRES bt driver esp_adc esp_event esp_http_server esp_lcd esp_netif esp_timer esp_wifi json lvgl mdns mqtt nvs_flash esp_lcd_sh8601 spiffs taby_character
+-    # The desktop notch's Rive character, which talks live (taby_live_talk).
+-    EMBED_FILES "taby-talk.riv"
+ )
+ target_compile_options(${COMPONENT_LIB} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++17>)
+ 
+diff --git a/firmware/main/app_main.c b/firmware/main/app_main.c
+index d413ef1..a329f8d 100644
+--- a/firmware/main/app_main.c
++++ b/firmware/main/app_main.c
+@@ -38,7 +38,7 @@ static void apply_factory_usb_shipping_default_if_needed(void) {
+ }
+ 
+ void app_main(void) {
+-    ESP_LOGI(TAG, "Booting new Taby production firmware scaffold");
++    ESP_LOGI(TAG, "Booting DeskDog firmware");
+     ESP_LOGI(TAG, "Boot mode: ambient_runtime");
+     ESP_LOGI(TAG, "Next blockers: provisioning, MQTT transport, recovery/update flow");
+ 
+diff --git a/firmware/main/board_amoled_1_64.c b/firmware/main/board_amoled_1_64.c
+index 57cf3bc..c321014 100644
+--- a/firmware/main/board_amoled_1_64.c
++++ b/firmware/main/board_amoled_1_64.c
+@@ -44,7 +44,7 @@ static const char *TAG = "board_1_64";
+ #define DISP_DRAW_BUF_LINES 30
+ #define BOARD_MODEL_LOG "Round 1.32 AMOLED"
+ #else
+-#define PIN_NUM_LCD_CS GPIO_NUM_9
++#define PIN_NUM_LCD_CS GPIO_NUM_46
+ #define PIN_NUM_LCD_PCLK GPIO_NUM_10
+ #define PIN_NUM_LCD_DATA0 GPIO_NUM_11
+ #define PIN_NUM_LCD_DATA1 GPIO_NUM_12
+diff --git a/firmware/main/taby_ble_transport.c b/firmware/main/taby_ble_transport.c
+index cf47702..2abbd92 100644
+--- a/firmware/main/taby_ble_transport.c
++++ b/firmware/main/taby_ble_transport.c
+@@ -61,7 +61,7 @@ static const ble_uuid128_t k_taby_power_characteristic_uuid =
+     BLE_UUID128_INIT(0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA0,
+                      0x00, 0x40, 0x00, 0x00, 0x59, 0x42, 0x41, 0x54);
+ 
+-static char s_device_name[TABY_BLE_DEVICE_NAME_SIZE] = "Taby";
++static char s_device_name[TABY_BLE_DEVICE_NAME_SIZE] = "DeskDog";
+ static char s_last_event_payload[TABY_BLE_EVENT_PAYLOAD_SIZE] = "READY";
+ static char s_last_error[96] = "";
+ static uint8_t s_own_addr_type = BLE_OWN_ADDR_PUBLIC;
+@@ -273,14 +273,14 @@ static void reset_transport_runtime_state(void) {
+ }
+ 
+ static void build_device_name(const taby_identity_t *identity) {
+-    snprintf(s_device_name, sizeof(s_device_name), "Taby");
++    snprintf(s_device_name, sizeof(s_device_name), "DeskDog");
+     if (!identity || identity->device_id[0] == '\0') {
+         return;
+     }
+ 
+     size_t id_len = strlen(identity->device_id);
+     const char *suffix = identity->device_id + (id_len > 6 ? id_len - 6 : 0);
+-    snprintf(s_device_name, sizeof(s_device_name), "Taby %s", suffix);
++    snprintf(s_device_name, sizeof(s_device_name), "DeskDog %s", suffix);
+ }
+ 
+ static uint8_t queue_command_job(
+diff --git a/firmware/main/taby_build_info.c b/firmware/main/taby_build_info.c
+index 55e076e..89e97de 100644
+--- a/firmware/main/taby_build_info.c
++++ b/firmware/main/taby_build_info.c
+@@ -2,7 +2,7 @@
+ 
+ #include "taby_asset_store.h"
+ 
+-static const char *TABY_PRODUCT_NAME = "taby";
++static const char *TABY_PRODUCT_NAME = "deskdog";
+ static const char *TABY_FIRMWARE_VERSION = "1.4.0";
+ static const char *TABY_ASSETS_VERSION_FALLBACK = "0.4.1";
+ 
+diff --git a/firmware/main/taby_http_server.c b/firmware/main/taby_http_server.c
+index d2c0115..640c5d4 100644
+--- a/firmware/main/taby_http_server.c
++++ b/firmware/main/taby_http_server.c
+@@ -35,7 +35,7 @@ static const char *k_status_page_html =
+     "<meta http-equiv='Cache-Control' content='no-store, no-cache, must-revalidate, max-age=0'>"
+     "<meta http-equiv='Pragma' content='no-cache'>"
+     "<meta http-equiv='Expires' content='0'>"
+-    "<title>Taby</title>"
++    "<title>DeskDog</title>"
+     "<style>"
+     "body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0b0d11;color:#f7f7f5;}"
+     ".wrap{min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;}"
+@@ -52,7 +52,7 @@ static const char *k_status_page_html =
+     ".hint{margin-top:14px;font-size:12px;color:#8f98a4;text-align:center;}"
+     "</style></head>"
+     "<body><div class='wrap'><main class='card'>"
+-    "<h1>Taby is online</h1>"
++    "<h1>DeskDog is online</h1>"
+     "<p>Use this page for local status. Open Wi-Fi setup only when you want to add or change networks.</p>"
+     "<div class='status-grid'>"
+     "<div class='row'><div class='label'>Current state</div><div id='state' class='value'>Loading…</div></div>"
+@@ -102,7 +102,7 @@ static const char *k_setup_page_html =
+     "<meta http-equiv='Cache-Control' content='no-store, no-cache, must-revalidate, max-age=0'>"
+     "<meta http-equiv='Pragma' content='no-cache'>"
+     "<meta http-equiv='Expires' content='0'>"
+-    "<title>Set up Taby</title>"
++    "<title>Set up DeskDog</title>"
+     "<style>"
+     "body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0b0d11;color:#f7f7f5;}"
+     ".wrap{min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;}"
+@@ -130,8 +130,8 @@ static const char *k_setup_page_html =
+     ".hidden{display:none;}"
+     "</style></head>"
+     "<body><div class='wrap'><main class='card'>"
+-    "<h1>Set up Taby</h1>"
+-    "<p>Enter the Wi-Fi Taby should join next.</p>"
++    "<h1>Set up DeskDog</h1>"
++    "<p>Enter the Wi-Fi DeskDog should join next.</p>"
+     "<div id='setupContent'>"
+     "<div class='section-title'>Nearby networks</div>"
+     "<div id='nearby' class='networks'><div class='network'><span>Scanning nearby Wi-Fi…</span></div></div>"
+@@ -140,15 +140,15 @@ static const char *k_setup_page_html =
+     "<label>Wi-Fi name<input name='ssid' autocomplete='ssid' autocapitalize='none' required></label>"
+     "<label>Password<input id='passwordInput' name='password' type='password' autocomplete='current-password'></label>"
+     "<label class='toggle-row'><input id='showPassword' type='checkbox'><span>Show password</span></label>"
+-    "<button id='submitButton' type='submit'>Connect Taby</button>"
++    "<button id='submitButton' type='submit'>Connect DeskDog</button>"
+     "</form>"
+     "<button type='button' id='rescan' class='secondary'>Scan again</button>"
+-    "<div id='statusHint' class='hint'>Stay on Taby Wi-Fi, then open 192.168.4.1 in Safari or Chrome.</div>"
++    "<div id='statusHint' class='hint'>Stay on DeskDog Wi-Fi, then open 192.168.4.1 in Safari or Chrome.</div>"
+     "</div>"
+     "<section id='resultCard' class='result hidden'>"
+     "<div id='resultBadge' class='result-badge'>Finished</div>"
+-    "<h2 id='resultTitle' class='result-title'>Return to Taby</h2>"
+-    "<p id='resultCopy' class='result-copy'>Taby connected successfully.</p>"
++    "<h2 id='resultTitle' class='result-title'>Return to DeskDog</h2>"
++    "<p id='resultCopy' class='result-copy'>DeskDog connected successfully.</p>"
+     "</section>"
+     "</main></div>"
+     "<script>"
+@@ -228,13 +228,13 @@ static const char *k_setup_page_html =
+     "clearSetupTimers();"
+     "submitButton.disabled=true;"
+     "submitButton.textContent='Connected';"
+-    "showResult('success','Return to Taby',data.station_ssid?`Taby connected to ${data.station_ssid}. You can return to the app now.`:'Taby connected successfully. You can return to the app now.');"
++    "showResult('success','Return to DeskDog',data.station_ssid?`DeskDog connected to ${data.station_ssid}. You can return to the app now.`:'DeskDog connected successfully. You can return to the app now.');"
+     "return;"
+     "}"
+     "if(data.wifi_error){"
+     "clearSetupTimers();"
+     "submitButton.disabled=false;"
+-    "submitButton.textContent='Connect Taby';"
++    "submitButton.textContent='Connect DeskDog';"
+     "statusHint.classList.add('error');"
+     "statusHint.textContent=`Could not connect: ${data.wifi_error}. Check the password and try again.`;"
+     "passwordInput.focus();"
+@@ -244,7 +244,7 @@ static const char *k_setup_page_html =
+     "clearSetupTimers();"
+     "submitButton.disabled=true;"
+     "submitButton.textContent='Connected';"
+-    "showResult('pending','Almost there','Taby is switching networks. If you see the idle animation, setup succeeded. Return to the app.');"
++    "showResult('pending','Almost there','DeskDog is switching networks. If you see the idle animation, setup succeeded. Return to the app.');"
+     "}"
+     "}"
+     "}"
+@@ -256,7 +256,7 @@ static const char *k_setup_page_html =
+     "submitButton.disabled=true;"
+     "submitButton.textContent='Connecting…';"
+     "statusHint.classList.remove('error');"
+-    "statusHint.textContent='Taby saved your Wi-Fi and is trying to connect now. If it returns to setup, open 192.168.4.1 and try again.';"
++    "statusHint.textContent='DeskDog saved your Wi-Fi and is trying to connect now. If it returns to setup, open 192.168.4.1 and try again.';"
+     "try{"
+     "const response=await fetch('/v1/provision',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({ssid,password})});"
+     "const data=await response.json().catch(()=>({}));"
+@@ -264,11 +264,11 @@ static const char *k_setup_page_html =
+     "clearSetupTimers();"
+     "setupPollCount=0;"
+     "setupPollTimer=setInterval(pollSetupProgress,700);"
+-    "setupDeadlineTimer=setTimeout(()=>{if(setupPollTimer){clearSetupTimers();submitButton.disabled=false;submitButton.textContent='Connect Taby';statusHint.classList.add('error');statusHint.textContent='Taby did not finish connecting. Check the password and try again.';}},25000);"
++    "setupDeadlineTimer=setTimeout(()=>{if(setupPollTimer){clearSetupTimers();submitButton.disabled=false;submitButton.textContent='Connect DeskDog';statusHint.classList.add('error');statusHint.textContent='DeskDog did not finish connecting. Check the password and try again.';}},25000);"
+     "}catch(error){"
+     "clearSetupTimers();"
+     "submitButton.disabled=false;"
+-    "submitButton.textContent='Connect Taby';"
++    "submitButton.textContent='Connect DeskDog';"
+     "statusHint.classList.add('error');"
+     "statusHint.textContent=(error&&error.message)?error.message:'Could not save Wi-Fi. Try again.';"
+     "}"
+@@ -762,18 +762,18 @@ static esp_err_t setup_form_submit_handler(httpd_req_t *req) {
+     if (err != ESP_OK) {
+         return send_html(req, "500 Internal Server Error",
+                          "<html><body style='font-family:sans-serif;background:#111;color:#fff;padding:24px'>"
+-                         "<h1>Setup failed</h1><p>Taby could not save that Wi-Fi yet. Try again.</p></body></html>");
++                         "<h1>Setup failed</h1><p>DeskDog could not save that Wi-Fi yet. Try again.</p></body></html>");
+     }
+ 
+     send_html(req, "200 OK",
+               "<!doctype html><html><head><meta charset='utf-8'>"
+               "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+-              "<title>Taby connecting</title></head>"
++              "<title>DeskDog connecting</title></head>"
+               "<body style='margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;"
+               "background:#0b0d11;color:#f7f7f5;display:grid;place-items:center;min-height:100vh;padding:24px;box-sizing:border-box'>"
+               "<main style='width:min(100%,420px);background:#141820;border:1px solid #2f3845;border-radius:24px;padding:24px;box-sizing:border-box;text-align:center'>"
+-              "<h1 style='margin:0 0 10px;font-size:28px'>Connecting Taby…</h1>"
+-              "<p style='margin:0;color:#b7bec8;font-size:15px;line-height:1.4'>Taby saved your Wi-Fi and will try connecting now. If it comes back to setup, open 192.168.4.1 in Safari or Chrome and try again.</p>"
++              "<h1 style='margin:0 0 10px;font-size:28px'>Connecting DeskDog…</h1>"
++              "<p style='margin:0;color:#b7bec8;font-size:15px;line-height:1.4'>DeskDog saved your Wi-Fi and will try connecting now. If it comes back to setup, open 192.168.4.1 in Safari or Chrome and try again.</p>"
+               "</main></body></html>");
+     xTaskCreate(delayed_wifi_connect_task, "taby_wifi_connect", 3072, NULL, 4, NULL);
+     return ESP_OK;
+diff --git a/firmware/main/taby_live_talk.cpp b/firmware/main/taby_live_talk.cpp
+index cc11ce2..90b650f 100644
+--- a/firmware/main/taby_live_talk.cpp
++++ b/firmware/main/taby_live_talk.cpp
+@@ -26,8 +26,7 @@ extern "C" {
+ #include "taby_face.hpp"
+ #include "taby_voice.hpp"
+ 
+-extern const uint8_t taby_talk_riv_start[] asm("_binary_taby_talk_riv_start");
+-extern const uint8_t taby_talk_riv_end[] asm("_binary_taby_talk_riv_end");
++// DeskDog: the Taby talking character file (taby-talk.riv, Taby artwork) is not built in.
+ 
+ /*
+  * The firmware's C++ is the live character (Rive and its renderer), and its
+@@ -208,7 +207,7 @@ bool load()
+   const bool loaded =
+       live->renderer != nullptr &&
+       live->character.load(
+-          rive::Span<const uint8_t>(taby_talk_riv_start, taby_talk_riv_end - taby_talk_riv_start),
++          rive::Span<const uint8_t>(nullptr, 0),
+           &live->factory,
+           &error);
+   heap_caps_malloc_extmem_enable(CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL);
+@@ -361,6 +360,9 @@ void drawFrame(Live &live, const plutovg_matrix_t &placement, Box &previous)
+ 
+ extern "C" void taby_live_talk_start(void)
+ {
++  // DeskDog: no live character (its artwork is Taby's); every face is a DeskDog GIF.
++  s_load = Load::failed;
++  return;
+ #if defined(TABY_HARDWARE_ROUND_1_32)
+   // The character is drawn for the 1.64's 280 x 456 panel. The round board
+   // keeps its GIFs and does not list voice_motion.
+@@ -389,8 +391,9 @@ extern "C" bool taby_live_talk_ready(void) { return s_load.load() == Load::ready
+ 
+ extern "C" bool taby_live_talk_takes(const char *animation_id)
+ {
+-  taby::Face face;
+-  return s_load.load() == Load::ready && faceFor(animation_id, &face);
++  // DeskDog: never draw the Taby live character; every face comes from the dog GIF pack.
++  (void)animation_id;
++  return false;
+ }
+ 
+ extern "C" void taby_live_talk_take_frame(lv_obj_t *gif)
+diff --git a/firmware/main/taby_onboarding.c b/firmware/main/taby_onboarding.c
+index 6f21f25..cf06cb1 100644
+--- a/firmware/main/taby_onboarding.c
++++ b/firmware/main/taby_onboarding.c
+@@ -265,7 +265,7 @@ static void render_choose_screen(void) {
+         28,
+         TABY_ONBOARDING_LANDSCAPE_W - 48,
+         &title_dsc,
+-        "SET UP TABY");
++        "SET UP DESKDOG");
+ 
+     draw_landscape_choice_button(
+         TABY_ONBOARDING_CHOICE_MIDDLE_X,
+@@ -307,7 +307,7 @@ static void render_usb_hint_screen(void) {
+         88,
+         TABY_ONBOARDING_LANDSCAPE_W - 68,
+         42,
+-        "OPEN TABY",
++        "OPEN DESKDOG",
+         &lv_font_montserrat_28,
+         lv_color_white());
+ 
+diff --git a/firmware/main/taby_reusable_preview.c b/firmware/main/taby_reusable_preview.c
+index 5795d57..9dd23b1 100644
+--- a/firmware/main/taby_reusable_preview.c
++++ b/firmware/main/taby_reusable_preview.c
+@@ -425,10 +425,10 @@ static void apply_card_defaults(
+             break;
+         case TABY_REUSABLE_CARD_TEXT:
+             if (!has_text(strings->title) && !has_text(strings->subtitle)) {
+-                snprintf(strings->title, sizeof(strings->title), "OPEN TABY");
++                snprintf(strings->title, sizeof(strings->title), "OPEN DESKDOG");
+                 snprintf(strings->subtitle, sizeof(strings->subtitle), "USB-C");
+             } else if (!has_text(strings->title)) {
+-                snprintf(strings->title, sizeof(strings->title), "OPEN TABY");
++                snprintf(strings->title, sizeof(strings->title), "OPEN DESKDOG");
+             }
+             break;
+         case TABY_REUSABLE_CARD_ICON_ONLY:
+@@ -458,7 +458,7 @@ static void apply_card_defaults(
+         case TABY_REUSABLE_CARD_CHOICE_2:
+             strings->icon_id[0] = '\0';
+             if (!has_text(strings->title)) {
+-                snprintf(strings->title, sizeof(strings->title), "SET UP TABY");
++                snprintf(strings->title, sizeof(strings->title), "SET UP DESKDOG");
+             }
+             if (!has_text(strings->primary_action_label)) {
+                 snprintf(strings->primary_action_label, sizeof(strings->primary_action_label), "WIRELESS");
+diff --git a/firmware/main/taby_state_machine.c b/firmware/main/taby_state_machine.c
+index 0130249..e9036bd 100644
+--- a/firmware/main/taby_state_machine.c
++++ b/firmware/main/taby_state_machine.c
+@@ -188,7 +188,7 @@ const char *taby_state_label(taby_state_t state) {
+         case TABY_STATE_MISSING_FEATURE:
+             return "COMING SOON";
+         default:
+-            return "TABY";
++            return "DESKDOG";
+     }
+ }
+ 
+diff --git a/firmware/main/taby_transport_protocol.c b/firmware/main/taby_transport_protocol.c
+index d7c2c79..45ab2f0 100644
+--- a/firmware/main/taby_transport_protocol.c
++++ b/firmware/main/taby_transport_protocol.c
+@@ -301,7 +301,7 @@ static const char *default_label_for_command(taby_command_t command) {
+             return "COMING SOON";
+         case TABY_COMMAND_NONE:
+         default:
+-            return "TABY";
++            return "DESKDOG";
+     }
+ }
+ 
+diff --git a/firmware/main/taby_wifi.c b/firmware/main/taby_wifi.c
+index 2c2d54c..2981d35 100644
+--- a/firmware/main/taby_wifi.c
++++ b/firmware/main/taby_wifi.c
+@@ -71,14 +71,14 @@ static void build_mdns_hostname(const taby_identity_t *identity, char *out, size
+ 
+     out[0] = '\0';
+     if (!identity || identity->device_id[0] == '\0') {
+-        snprintf(out, out_size, "taby");
++        snprintf(out, out_size, "deskdog");
+         return;
+     }
+ 
+     const char *device_id = identity->device_id;
+     size_t device_id_len = strlen(device_id);
+     const char *suffix = device_id_len > 6 ? device_id + (device_id_len - 6) : device_id;
+-    snprintf(out, out_size, "taby-%.6s", suffix);
++    snprintf(out, out_size, "deskdog-%.6s", suffix);
+ }
+ 
+ static void ensure_wifi_network_services_started(void) {
+@@ -394,8 +394,8 @@ static void build_setup_ap_credentials(const taby_identity_t *identity) {
+     size_t len = strlen(device_id);
+     const char *suffix = len > 6 ? device_id + (len - 6) : device_id;
+ 
+-    snprintf(s_status.ap_ssid, sizeof(s_status.ap_ssid), "taby-%s", suffix);
+-    snprintf(s_status.ap_password, sizeof(s_status.ap_password), "taby%s", suffix);
++    snprintf(s_status.ap_ssid, sizeof(s_status.ap_ssid), "deskdog-%s", suffix);
++    snprintf(s_status.ap_password, sizeof(s_status.ap_password), "deskdog%s", suffix);
+ }
+ 
+ static const char *disconnect_reason_label(wifi_err_reason_t reason) {
+@@ -460,7 +460,7 @@ static void start_mdns_if_needed(void) {
+         return;
+     }
+ 
+-    const char *hostname = s_status.mdns_hostname[0] ? s_status.mdns_hostname : "taby";
++    const char *hostname = s_status.mdns_hostname[0] ? s_status.mdns_hostname : "deskdog";
+     err = mdns_hostname_set(hostname);
+     if (err != ESP_OK) {
+         ESP_LOGW(TAG, "mDNS hostname set failed: %s", esp_err_to_name(err));
+@@ -470,10 +470,10 @@ static void start_mdns_if_needed(void) {
+     }
+ 
+     char instance_name[48];
+-    if (s_status.mdns_hostname[0] != '\0' && strcmp(s_status.mdns_hostname, "taby") != 0) {
+-        snprintf(instance_name, sizeof(instance_name), "Taby %.6s", s_status.mdns_hostname + 5);
++    if (s_status.mdns_hostname[0] != '\0' && strcmp(s_status.mdns_hostname, "deskdog") != 0) {
++        snprintf(instance_name, sizeof(instance_name), "DeskDog %.6s", s_status.mdns_hostname + 8);
+     } else {
+-        snprintf(instance_name, sizeof(instance_name), "Taby Device");
++        snprintf(instance_name, sizeof(instance_name), "DeskDog Device");
+     }
+     err = mdns_instance_name_set(instance_name);
+     if (err != ESP_OK) {
